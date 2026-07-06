@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced SIP Calculator — The Passbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12241c;
+    --ink-2:#1c3629;
+    --ink-3:#254433;
+    --paper:#f3eee1;
+    --paper-2:#eae2cd;
+    --paper-line:#d9cead;
+    --gold:#c69a3d;
+    --gold-deep:#8f6c22;
+    --rust:#a3503f;
+    --teal:#5c8a76;
+    --muted:#93ab9c;
+    --text-dark:#1b2e27;
+    --text-light:#f3eee1;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(243,238,225,0.035) 1px, transparent 0);
+    background-size:22px 22px;
+    color:var(--text-light);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:0 0 80px 0;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px 0;}
+
+  /* ---------- Header ---------- */
+  header{margin-bottom:36px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--gold);
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:26px;height:1px;background:var(--gold);
+    display:inline-block;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px,5vw,54px);
+    margin:10px 0 8px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    max-width:560px;
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.6;
+    margin:0;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    display:flex;gap:2px;margin:34px 0 22px;
+    border-bottom:1px solid var(--ink-3);
+    flex-wrap:wrap;
+  }
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:.03em;
+    background:none;border:none;
+    color:var(--muted);
+    padding:12px 4px;
+    margin-right:28px;
+    cursor:pointer;
+    position:relative;
+    top:1px;
+  }
+  .tab .num{color:var(--gold-deep);margin-right:8px;}
+  .tab.active{color:var(--text-light);border-bottom:2px solid var(--gold);}
+  .tab.active .num{color:var(--gold);}
+
+  /* ---------- Layout grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:26px;
+    align-items:start;
+  }
+  @media (max-width:880px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Deposit slip (inputs) ---------- */
+  .slip{
+    background:var(--paper);
+    color:var(--text-dark);
+    border-radius:var(--radius);
+    position:relative;
+    padding:28px 26px 26px;
+    box-shadow:0 20px 40px -18px rgba(0,0,0,.5);
+  }
+  .slip::before{
+    content:"";
+    position:absolute;top:0;left:0;right:0;height:10px;
+    background-image:radial-gradient(circle, var(--ink) 2.6px, transparent 2.6px);
+    background-size:16px 16px;
+    background-position:8px 0px;
+    transform:translateY(-5px);
+  }
+  .slip h2{
+    font-family:'Fraunces',serif;
+    font-size:20px;font-weight:600;
+    margin:4px 0 2px;
+  }
+  .slip .slip-sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--gold-deep);
+    letter-spacing:.05em;
+    margin-bottom:20px;
+    border-bottom:1px dashed var(--paper-line);
+    padding-bottom:16px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12.5px;font-weight:600;
+    margin-bottom:6px;color:var(--text-dark);
+  }
+  .field label .val{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--gold-deep);
+    font-weight:600;
+  }
+  .field input[type="number"]{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    padding:9px 10px;
+    border:1px solid var(--paper-line);
+    background:#fff;
+    border-radius:2px;
+    color:var(--text-dark);
+  }
+  .field input[type="number"]:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  .field input[type="range"]{
+    width:100%;accent-color:var(--gold-deep);
+    margin-top:2px;
+  }
+  .field select{
+    width:100%;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:13.5px;
+    padding:8px 10px;
+    border:1px solid var(--paper-line);
+    background:#fff;
+    color:var(--text-dark);
+    border-radius:2px;
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .adv-toggle{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--teal);
+    cursor:pointer;user-select:none;
+    margin:18px 0 14px;
+    border-top:1px dashed var(--paper-line);
+    padding-top:14px;
+  }
+  .adv-toggle .chev{transition:transform .2s;display:inline-block;}
+  .adv-toggle.open .chev{transform:rotate(90deg);}
+  .adv-body{display:none;}
+  .adv-body.open{display:block;}
+
+  .switch-row{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .switch-row .lbl{font-size:12.5px;font-weight:600;}
+  .switch-row .hint{font-size:10.5px;color:var(--teal);display:block;font-weight:400;margin-top:2px;}
+  .switch{
+    width:38px;height:20px;border-radius:20px;background:var(--paper-line);
+    position:relative;cursor:pointer;flex:none;
+    transition:background .2s;
+  }
+  .switch.on{background:var(--gold-deep);}
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;
+    width:16px;height:16px;border-radius:50%;background:#fff;
+    transition:left .2s;
+  }
+  .switch.on::after{left:20px;}
+
+  .tax-sub{padding:10px 0 4px;}
+
+  button.post{
+    width:100%;
+    margin-top:18px;
+    background:var(--ink);
+    color:var(--gold);
+    border:none;
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.05em;
+    font-size:13.5px;
+    padding:14px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  button.post:hover{background:#0a1712;}
+
+  /* ---------- Passbook (results) ---------- */
+  .passbook{
+    background:var(--ink-2);
+    border:1px solid var(--ink-3);
+    border-radius:var(--radius);
+    padding:28px 28px 10px;
+  }
+  .pb-head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    flex-wrap:wrap;gap:10px;
+    border-bottom:1px solid var(--ink-3);
+    padding-bottom:16px;margin-bottom:20px;
+  }
+  .pb-head h2{
+    font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:0;
+  }
+  .pb-head .stamp{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;color:var(--muted);
+    border:1px solid var(--muted);
+    padding:4px 8px;border-radius:20px;
+  }
+
+  .headline{
+    display:flex;gap:36px;flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .headline .num{
+    font-family:'Fraunces',serif;
+    font-size:clamp(28px,4vw,40px);
+    font-weight:600;color:var(--gold);
+    line-height:1;
+  }
+  .headline .lbl{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.05em;
+    color:var(--muted);text-transform:uppercase;
+    margin-top:6px;display:block;
+  }
+
+  .stat-row{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:16px;margin:22px 0 8px;
+  }
+  .stat{
+    border-left:2px solid var(--ink-3);
+    padding-left:12px;
+  }
+  .stat .v{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:18px;font-weight:600;color:var(--text-light);
+  }
+  .stat .k{
+    font-size:11px;color:var(--muted);margin-top:3px;
+  }
+  .stat.gold{border-left-color:var(--gold);}
+  .stat.rust .v{color:var(--rust);}
+
+  .insight{
+    font-size:13px;color:var(--muted);
+    line-height:1.6;
+    border-top:1px dashed var(--ink-3);
+    padding:16px 0;
+    margin-top:6px;
+  }
+  .insight b{color:var(--text-light);font-weight:600;}
+
+  /* chart */
+  .chart-wrap{margin:18px 0 6px;}
+  .chart-legend{
+    display:flex;gap:18px;font-size:11px;color:var(--muted);
+    margin-bottom:8px;font-family:'IBM Plex Mono',monospace;
+  }
+  .chart-legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:8px;height:8px;border-radius:2px;display:inline-block;}
+
+  /* ---------- Ledger table ---------- */
+  .ledger{
+    margin-top:26px;
+    background:var(--paper);
+    color:var(--text-dark);
+    border-radius:var(--radius);
+    padding:26px 26px 8px;
+    position:relative;
+  }
+  .ledger::before{
+    content:"";
+    position:absolute;top:0;left:0;right:0;height:10px;
+    background-image:radial-gradient(circle, var(--ink) 2.6px, transparent 2.6px);
+    background-size:16px 16px;background-position:8px 0px;
+    transform:translateY(-5px);
+  }
+  .ledger h3{
+    font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:4px 0 4px;
+  }
+  .ledger .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-deep);
+    margin-bottom:14px;
+  }
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:right;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;font-size:10.5px;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--gold-deep);
+    border-bottom:1px solid var(--text-dark);
+    padding:8px 6px;
+  }
+  thead th:first-child, tbody td:first-child{text-align:left;}
+  tbody td{
+    text-align:right;
+    font-family:'IBM Plex Mono',monospace;
+    padding:8px 6px;
+    border-bottom:1px dashed var(--paper-line);
+  }
+  tbody tr:hover td{background:var(--paper-2);}
+  .table-scroll{max-height:360px;overflow-y:auto;}
+
+  footer{
+    max-width:1180px;margin:40px auto 0;padding:0 24px 32px;
+    font-size:11.5px;color:var(--muted);line-height:1.6;
+  }
+  footer .copyright{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid var(--ink-3);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    color:var(--gold-deep);
+  }
+  a, .lnk{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Ledger No. 07 / Systematic Investment</div>
+    <h1>Advanced SIP Calculator</h1>
+    <p>Fill the deposit slip like you would at the bank counter. This one accounts for step-up instalments, a one-time lump sum, inflation, expense ratio and tax on gains — not just a bare maturity number.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-mode="sip"><span class="num">01</span>SIP Growth</button>
+    <button class="tab" data-mode="stepup"><span class="num">02</span>Step-Up SIP</button>
+    <button class="tab" data-mode="goal"><span class="num">03</span>Goal Planner</button>
+  </div>
+
+  <div class="grid">
+    <!-- DEPOSIT SLIP -->
+    <div class="slip">
+      <h2>Deposit slip</h2>
+      <div class="slip-sub" id="slipSub">MODE — REGULAR MONTHLY SIP</div>
+
+      <div class="field" id="fieldMonthly">
+        <label>Monthly instalment <span class="val" id="vMonthly">₹10,000</span></label>
+        <input type="range" id="rMonthly" min="500" max="200000" step="500" value="10000">
+        <input type="number" id="nMonthly" value="10000" style="margin-top:8px;">
+      </div>
+
+      <div class="field" id="fieldGoal" style="display:none;">
+        <label>Target corpus <span class="val" id="vGoal">₹1,00,00,000</span></label>
+        <input type="range" id="rGoal" min="100000" max="100000000" step="100000" value="10000000">
+        <input type="number" id="nGoal" value="10000000" style="margin-top:8px;">
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Tenure (years) <span class="val" id="vYears">15</span></label>
+          <input type="range" id="rYears" min="1" max="40" step="1" value="15">
+        </div>
+        <div class="field">
+          <label>Return, p.a. <span class="val" id="vReturn">12%</span></label>
+          <input type="range" id="rReturn" min="4" max="24" step="0.5" value="12">
+        </div>
+      </div>
+
+      <div class="field" id="fieldStepup" style="display:none;">
+        <label>Annual step-up <span class="val" id="vStepup">10%</span></label>
+        <input type="range" id="rStepup" min="0" max="30" step="1" value="10">
+      </div>
+
+      <div class="field">
+        <label>SIP frequency</label>
+        <select id="sFreq">
+          <option value="12">Monthly</option>
+          <option value="4">Quarterly</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>One-time lump sum (optional) <span class="val" id="vLump">₹0</span></label>
+        <input type="range" id="rLump" min="0" max="5000000" step="10000" value="0">
+      </div>
+
+      <div class="adv-toggle" id="advToggle"><span class="chev">▸</span> Advanced ledger entries — inflation, expense ratio, tax</div>
+      <div class="adv-body" id="advBody">
+
+        <div class="switch-row">
+          <div><span class="lbl">Adjust for inflation</span><span class="hint">See what the corpus is worth in today's rupees</span></div>
+          <div class="switch" id="swInfl"></div>
+        </div>
+        <div class="field" id="fieldInfl" style="display:none;">
+          <label>Expected inflation <span class="val" id="vInfl">6%</span></label>
+          <input type="range" id="rInfl" min="0" max="12" step="0.5" value="6">
+        </div>
+
+        <div class="switch-row">
+          <div><span class="lbl">Fund expense ratio</span><span class="hint">Annual fee, deducted from your return</span></div>
+          <div class="switch" id="swExp"></div>
+        </div>
+        <div class="field" id="fieldExp" style="display:none;">
+          <label>Expense ratio <span class="val" id="vExp">1%</span></label>
+          <input type="range" id="rExp" min="0" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="switch-row">
+          <div><span class="lbl">Tax on gains at withdrawal</span><span class="hint">Simplified — check current rules before relying on this</span></div>
+          <div class="switch" id="swTax"></div>
+        </div>
+        <div class="tax-sub" id="fieldTax" style="display:none;">
+          <div class="field">
+            <label>Fund category</label>
+            <select id="sTaxType">
+              <option value="equity">Equity (LTCG, ₹1.25L exemption)</option>
+              <option value="other">Debt / other (your slab rate)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tax rate <span class="val" id="vTax">12.5%</span></label>
+            <input type="range" id="rTax" min="0" max="35" step="0.5" value="12.5">
+          </div>
+        </div>
+      </div>
+
+      <button class="post" id="btnCalc">Update passbook →</button>
+    </div>
+
+    <!-- PASSBOOK -->
+    <div class="passbook">
+      <div class="pb-head">
+        <h2>Your passbook</h2>
+        <div class="stamp" id="modeStamp">REGULAR SIP</div>
+      </div>
+
+      <div class="headline">
+        <div>
+          <div class="num" id="outMaturity">₹0</div>
+          <span class="lbl" id="maturityLbl">Maturity value</span>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="v" id="outInvested">₹0</div><div class="k">Total invested</div></div>
+        <div class="stat gold"><div class="v" id="outGain">₹0</div><div class="k">Wealth gained</div></div>
+        <div class="stat" id="statInflWrap" style="display:none;"><div class="v" id="outInfl">₹0</div><div class="k">Real value (inflation-adjusted)</div></div>
+        <div class="stat rust" id="statTaxWrap" style="display:none;"><div class="v" id="outTax">₹0</div><div class="k">Tax on gains</div></div>
+        <div class="stat" id="statPostTaxWrap" style="display:none;"><div class="v" id="outPostTax">₹0</div><div class="k">Post-tax, in-hand value</div></div>
+      </div>
+
+      <div class="insight" id="insight"></div>
+
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <span><span class="dot" style="background:var(--teal)"></span>Invested</span>
+          <span><span class="dot" style="background:var(--gold)"></span>Gains</span>
+          <span><span class="dot" style="background:var(--text-light);border-radius:50%;"></span>Maturity line</span>
+        </div>
+        <div id="chartHost"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ledger">
+    <h3>Year-wise ledger</h3>
+    <div class="sub" id="ledgerSub">ENTRY LOG — YEAR BY YEAR</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Year</th><th>Instalment this year</th><th>Cumulative invested</th><th>Value at year-end</th><th>Gain so far</th></tr>
+        </thead>
+        <tbody id="ledgerBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Figures are illustrative projections based on the return rate you enter — actual mutual fund returns are market-linked and not guaranteed. Tax treatment is simplified for planning purposes only; confirm current rules with a tax advisor before making decisions.
+  <div class="copyright">© 2026 Pravin. All rights reserved.</div>
+</footer>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  let mode = 'sip';
+
+  // ---- element refs ----
+  const els = {
+    tabs: document.querySelectorAll('.tab'),
+    fieldMonthly: $('fieldMonthly'), fieldGoal: $('fieldGoal'), fieldStepup: $('fieldStepup'),
+    rMonthly: $('rMonthly'), nMonthly: $('nMonthly'), vMonthly: $('vMonthly'),
+    rGoal: $('rGoal'), nGoal: $('nGoal'), vGoal: $('vGoal'),
+    rYears: $('rYears'), vYears: $('vYears'),
+    rReturn: $('rReturn'), vReturn: $('vReturn'),
+    rStepup: $('rStepup'), vStepup: $('vStepup'),
+    sFreq: $('sFreq'),
+    rLump: $('rLump'), vLump: $('vLump'),
+    advToggle: $('advToggle'), advBody: $('advBody'),
+    swInfl: $('swInfl'), fieldInfl: $('fieldInfl'), rInfl: $('rInfl'), vInfl: $('vInfl'),
+    swExp: $('swExp'), fieldExp: $('fieldExp'), rExp: $('rExp'), vExp: $('vExp'),
+    swTax: $('swTax'), fieldTax: $('fieldTax'), sTaxType: $('sTaxType'), rTax: $('rTax'), vTax: $('vTax'),
+    btnCalc: $('btnCalc'),
+    slipSub: $('slipSub'), modeStamp: $('modeStamp'),
+    outMaturity: $('outMaturity'), maturityLbl: $('maturityLbl'),
+    outInvested: $('outInvested'), outGain: $('outGain'),
+    statInflWrap: $('statInflWrap'), outInfl: $('outInfl'),
+    statTaxWrap: $('statTaxWrap'), outTax: $('outTax'),
+    statPostTaxWrap: $('statPostTaxWrap'), outPostTax: $('outPostTax'),
+    insight: $('insight'),
+    chartHost: $('chartHost'),
+    ledgerBody: $('ledgerBody')
+  };
+
+  const state = { infl:false, exp:false, tax:false };
+
+  // ---- formatting ----
+  function inr(n, decimals=0){
+    if(n===null||n===undefined||isNaN(n)) n=0;
+    const neg = n<0; n=Math.abs(n);
+    let fixed = n.toFixed(decimals);
+    let [int, dec] = fixed.split('.');
+    let last3 = int.slice(-3);
+    let rest = int.slice(0,-3);
+    if(rest!=='') last3 = ',' + last3;
+    let formatted = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + last3;
+    return (neg?'-':'') + '₹' + formatted + (dec? '.'+dec : '');
+  }
+  function shortForm(n){
+    if(n>=10000000) return (n/10000000).toFixed(2)+' Cr';
+    if(n>=100000) return (n/100000).toFixed(2)+' L';
+    return inr(n);
+  }
+
+  // ---- slider <-> label wiring ----
+  function link(range, label, fmt){
+    const update=()=>label.textContent = fmt(+range.value);
+    range.addEventListener('input', update); update();
+  }
+  link(els.rYears, els.vYears, v=>v+ (v==1?' year':' years'));
+  link(els.rReturn, els.vReturn, v=>v+'%');
+  link(els.rStepup, els.vStepup, v=>v+'%');
+  link(els.rInfl, els.vInfl, v=>v+'%');
+  link(els.rExp, els.vExp, v=>v+'%');
+  link(els.rTax, els.vTax, v=>v+'%');
+  link(els.rLump, els.vLump, v=>inr(v));
+
+  els.rMonthly.addEventListener('input', ()=>{ els.nMonthly.value = els.rMonthly.value; els.vMonthly.textContent = inr(+els.rMonthly.value); });
+  els.nMonthly.addEventListener('input', ()=>{ let v=+els.nMonthly.value||0; if(v>200000) els.rMonthly.value=200000; else if(v>=500) els.rMonthly.value=v; els.vMonthly.textContent = inr(v); });
+  els.vMonthly.textContent = inr(+els.rMonthly.value);
+
+  els.rGoal.addEventListener('input', ()=>{ els.nGoal.value = els.rGoal.value; els.vGoal.textContent = inr(+els.rGoal.value); });
+  els.nGoal.addEventListener('input', ()=>{ let v=+els.nGoal.value||0; if(v>100000000) els.rGoal.value=100000000; else if(v>=100000) els.rGoal.value=v; els.vGoal.textContent = inr(v); });
+  els.vGoal.textContent = inr(+els.rGoal.value);
+
+  // ---- tabs ----
+  els.tabs.forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      els.tabs.forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      mode = tab.dataset.mode;
+      applyMode();
+      calculate();
+    });
+  });
+
+  function applyMode(){
+    els.fieldMonthly.style.display = (mode==='goal') ? 'none' : 'block';
+    els.fieldGoal.style.display = (mode==='goal') ? 'block' : 'none';
+    els.fieldStepup.style.display = (mode==='stepup') ? 'block' : 'none';
+    const subs = {
+      sip:'MODE — REGULAR MONTHLY SIP',
+      stepup:'MODE — STEP-UP SIP (RISING INSTALMENT)',
+      goal:'MODE — GOAL PLANNER (REVERSE CALCULATION)'
+    };
+    els.slipSub.textContent = subs[mode];
+    els.modeStamp.textContent = {sip:'REGULAR SIP', stepup:'STEP-UP SIP', goal:'GOAL PLANNER'}[mode];
+    els.maturityLbl.textContent = (mode==='goal') ? 'Required monthly instalment' : 'Maturity value';
+  }
+
+  // ---- advanced toggle ----
+  els.advToggle.addEventListener('click', ()=>{
+    els.advToggle.classList.toggle('open');
+    els.advBody.classList.toggle('open');
+  });
+  function wireSwitch(sw, field, key){
+    sw.addEventListener('click', ()=>{
+      state[key] = !state[key];
+      sw.classList.toggle('on', state[key]);
+      field.style.display = state[key] ? 'block' : 'none';
+    });
+  }
+  wireSwitch(els.swInfl, els.fieldInfl, 'infl');
+  wireSwitch(els.swExp, els.fieldExp, 'exp');
+  wireSwitch(els.swTax, els.fieldTax, 'tax');
+  els.sTaxType.addEventListener('change', ()=>{
+    if(els.sTaxType.value==='equity'){ els.rTax.value=12.5; } else { els.rTax.value=20; }
+    els.vTax.textContent = (+els.rTax.value)+'%';
+  });
+
+  els.btnCalc.addEventListener('click', calculate);
+
+  // ---- core simulation: month/quarter by period ----
+  // returns { yearly: [{year, investedThisYear, cumInvested, valueEnd}], totalInvested, maturity }
+  function simulate({monthlyAmt, years, annualReturnPct, stepupPct, periodsPerYear, lumpSum, expenseRatioPct}){
+    const effReturn = Math.max(0, annualReturnPct - (expenseRatioPct||0)) / 100;
+    const periodRate = Math.pow(1+effReturn, 1/periodsPerYear) - 1;
+    const totalPeriods = years * periodsPerYear;
+    let balance = lumpSum || 0;
+    let invested = lumpSum || 0;
+    let currentInstalment = monthlyAmt * (12/periodsPerYear); // scale to per-period amount
+    const yearly = [];
+    let investedThisYear = 0;
+
+    for(let p=1; p<=totalPeriods; p++){
+      balance = (balance + currentInstalment) * (1+periodRate);
+      invested += currentInstalment;
+      investedThisYear += currentInstalment;
+
+      if(p % periodsPerYear === 0){
+        yearly.push({
+          year: p/periodsPerYear,
+          investedThisYear: investedThisYear,
+          cumInvested: invested,
+          valueEnd: balance
+        });
+        investedThisYear = 0;
+        // step up at year boundary
+        if(stepupPct){
+          currentInstalment = currentInstalment * (1+stepupPct/100);
+        }
+      }
+    }
+    return { yearly, totalInvested: invested, maturity: balance };
+  }
+
+  function goalSolve({target, years, annualReturnPct, stepupPct, periodsPerYear, lumpSum, expenseRatioPct}){
+    let lo=0, hi=target; // monthly amount search bounds
+    for(let i=0;i<60;i++){
+      const mid=(lo+hi)/2;
+      const res = simulate({monthlyAmt:mid, years, annualReturnPct, stepupPct, periodsPerYear, lumpSum, expenseRatioPct});
+      if(res.maturity < target) lo = mid; else hi = mid;
+    }
+    return (lo+hi)/2;
+  }
+
+  function drawChart(yearly){
+    const w = 640, h = 260, padL=46, padB=28, padT=10, padR=6;
+    const plotW = w-padL-padR, plotH = h-padT-padB;
+    const maxVal = Math.max(...yearly.map(y=>y.valueEnd), 1);
+    const n = yearly.length;
+    const bw = plotW / n * 0.62;
+    const gap = plotW / n;
+
+    let bars = '';
+    let linePts = [];
+    yearly.forEach((y, i)=>{
+      const x = padL + i*gap + (gap-bw)/2;
+      const investedH = (y.cumInvested/maxVal) * plotH;
+      const totalH = (y.valueEnd/maxVal) * plotH;
+      const gainH = Math.max(totalH-investedH, 0);
+      const yInvestedTop = padT + plotH - investedH;
+      const yGainTop = padT + plotH - totalH;
+      bars += `<rect x="${x.toFixed(1)}" y="${yInvestedTop.toFixed(1)}" width="${bw.toFixed(1)}" height="${investedH.toFixed(1)}" fill="var(--teal)" />`;
+      bars += `<rect x="${x.toFixed(1)}" y="${yGainTop.toFixed(1)}" width="${bw.toFixed(1)}" height="${gainH.toFixed(1)}" fill="var(--gold)" />`;
+      linePts.push([ (x+bw/2).toFixed(1), yGainTop.toFixed(1) ]);
+      if(i%Math.ceil(n/8||1)===0 || i===n-1){
+        bars += `<text x="${(x+bw/2).toFixed(1)}" y="${h-8}" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono, monospace" text-anchor="middle">Y${y.year}</text>`;
+      }
+    });
+    const linePath = 'M ' + linePts.map(p=>p.join(',')).join(' L ');
+    // y-axis labels
+    let axis = '';
+    for(let i=0;i<=4;i++){
+      const val = maxVal*i/4;
+      const yy = padT + plotH - (val/maxVal)*plotH;
+      axis += `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${w-padR}" y2="${yy.toFixed(1)}" stroke="var(--ink-3)" stroke-width="1" />`;
+      axis += `<text x="${padL-6}" y="${(yy+3).toFixed(1)}" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono, monospace" text-anchor="end">${shortForm(val)}</text>`;
+    }
+
+    const svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block;">
+      ${axis}
+      ${bars}
+      <path d="${linePath}" fill="none" stroke="var(--text-light)" stroke-width="1.6" stroke-dasharray="1000" style="animation:draw 1.1s ease forwards;" />
+    </svg>
+    <style>@keyframes draw{from{stroke-dashoffset:1000;}to{stroke-dashoffset:0;}}</style>`;
+    els.chartHost.innerHTML = svg;
+  }
+
+  function buildLedgerTable(yearly){
+    els.ledgerBody.innerHTML = yearly.map(y=>`
+      <tr>
+        <td>${y.year}</td>
+        <td>${inr(y.investedThisYear)}</td>
+        <td>${inr(y.cumInvested)}</td>
+        <td>${inr(y.valueEnd)}</td>
+        <td>${inr(y.valueEnd-y.cumInvested)}</td>
+      </tr>`).join('');
+  }
+
+  function calculate(){
+    const years = +els.rYears.value;
+    const annualReturn = +els.rReturn.value;
+    const periodsPerYear = +els.sFreq.value;
+    const lumpSum = +els.rLump.value;
+    const stepupPct = mode==='stepup' ? +els.rStepup.value : 0;
+    const expenseRatioPct = state.exp ? +els.rExp.value : 0;
+    const inflPct = state.infl ? +els.rInfl.value : 0;
+    const taxPct = state.tax ? +els.rTax.value : 0;
+    const taxType = els.sTaxType.value;
+
+    let result, requiredMonthly=null;
+
+    if(mode==='goal'){
+      const target = +els.rGoal.value;
+      requiredMonthly = goalSolve({target, years, annualReturnPct:annualReturn, stepupPct, periodsPerYear, lumpSum, expenseRatioPct});
+      result = simulate({monthlyAmt:requiredMonthly, years, annualReturnPct:annualReturn, stepupPct, periodsPerYear, lumpSum, expenseRatioPct});
+    } else {
+      const monthlyAmt = +els.nMonthly.value;
+      result = simulate({monthlyAmt, years, annualReturnPct:annualReturn, stepupPct, periodsPerYear, lumpSum, expenseRatioPct});
+    }
+
+    const { yearly, totalInvested, maturity } = result;
+    const gain = maturity - totalInvested;
+
+    if(mode==='goal'){
+      els.outMaturity.textContent = inr(Math.round(requiredMonthly));
+    } else {
+      els.outMaturity.textContent = inr(Math.round(maturity));
+    }
+    els.outInvested.textContent = inr(Math.round(totalInvested));
+    els.outGain.textContent = inr(Math.round(gain));
+
+    // inflation
+    if(state.infl){
+      const real = maturity / Math.pow(1+inflPct/100, years);
+      els.outInfl.textContent = inr(Math.round(real));
+      els.statInflWrap.style.display='block';
+    } else els.statInflWrap.style.display='none';
+
+    // tax
+    if(state.tax){
+      let taxableGain = gain;
+      if(taxType==='equity'){
+        taxableGain = Math.max(0, gain - 125000);
+      }
+      const taxAmt = taxableGain * (taxPct/100);
+      const postTax = maturity - taxAmt;
+      els.outTax.textContent = inr(Math.round(taxAmt));
+      els.outPostTax.textContent = inr(Math.round(postTax));
+      els.statTaxWrap.style.display='block';
+      els.statPostTaxWrap.style.display='block';
+    } else {
+      els.statTaxWrap.style.display='none';
+      els.statPostTaxWrap.style.display='none';
+    }
+
+    // insight line
+    const multiple = totalInvested>0 ? (maturity/totalInvested).toFixed(2) : '0';
+    const gainShare = maturity>0 ? ((gain/maturity)*100).toFixed(0) : '0';
+    let insightText = `Your money grows <b>${multiple}×</b> over ${years} years — gains make up about <b>${gainShare}%</b> of the final corpus.`;
+    if(mode==='goal'){
+      insightText = `To reach <b>${shortForm(+els.rGoal.value)}</b> in ${years} years at ${annualReturn}% p.a., you need to invest about <b>${inr(Math.round(requiredMonthly))}</b> per month.`;
+    }
+    if(state.infl){
+      insightText += ` In today's money, that's worth <b>${shortForm(maturity / Math.pow(1+inflPct/100, years))}</b> after ${inflPct}% inflation.`;
+    }
+    els.insight.innerHTML = insightText;
+
+    drawChart(yearly);
+    buildLedgerTable(yearly);
+  }
+
+  applyMode();
+  calculate();
+})();
+</script>
+</body>
+</html>
