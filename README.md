@@ -5,7 +5,7 @@
 **🔗 Live App:** [cpravin2110.github.io/Advanced-SIP-Calculator](https://cpravin2110.github.io/Advanced-SIP-Calculator/)
 
 ---
-![Dashboard Preview]()
+![Dashboard Preview](https://github.com/cpravin2110/Advanced-SIP-Calculator/blob/1fa3cdf285292d2250b5bc70f21e3b72a7567f55/Images/Screenshot%202026-07-09%20203458.png)
 
 ---
 
