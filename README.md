@@ -5,6 +5,9 @@
 **🔗 Live App:** [cpravin2110.github.io/Advanced-SIP-Calculator](https://cpravin2110.github.io/Advanced-SIP-Calculator/)
 
 ---
+![Dashboard Preview]()
+
+---
 
 ## 🧾 What is this?
 
