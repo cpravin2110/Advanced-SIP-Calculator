@@ -122,9 +122,10 @@ python -m http.server 8000
 Advanced-SIP-Calculator/
 ├── index.html      # Markup, styling, and calculator logic
 └── README.md        # This file
+└── Images          #Images of the site
 ```
 
-*(Update this section if the project is later split into separate CSS/JS files.)*
+
 
 ---
 
